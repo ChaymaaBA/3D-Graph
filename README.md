@@ -1,26 +1,69 @@
-# 3D-Graph
+Pseudo-code : **Modélisation du Graphe et Recherche du Chemin Optimal**
 
-1. **Initialiser le graphe G** comme un graphe orienté
-2. **Ajouter tous les waypoints** en tant que noeuds avec des altitudes fixes
-3. **Ajouter tous les thermals** en tant que noeuds avec des altitudes aléatoires plus basses
-4. **Pour chaque noeud i dans le graphe** :
-   a. **Pour chaque noeud j dans le graphe** :
-      i. **Si i ≠ j** :
-         - **Calculer la distance** entre i et j dans le plan (x, y)
-         - **Calculer la différence d'altitude** (z)
-         - **Déterminer le coût énergétique** :
-           * **Si altitude(j) < altitude(i)** : coût réduit (**descente avantageuse**)
-           * **Sinon** : coût augmenté (**montée énergivore**)
-         - **Ajouter une arête dirigée entre i et j** avec le poids calculé
-5. **Initialiser une liste `dist`** avec des valeurs infinies pour tous les noeuds sauf le point de départ `start` (distance 0)
-6. **Initialiser une file de priorité `queue`** avec `(0, start)`
-7. **Tant que la file `queue` n'est pas vide** :
-   a. **Extraire le noeud `u` avec la plus petite distance**
-   b. **Pour chaque voisin `v` de `u`** :
-      i. **Calculer le coût temporaire `new_cost = dist[u] + poids(u, v)`**
-      ii. **Si `new_cost < dist[v]`** :
-         - **Mettre à jour `dist[v]`**
-         - **Mettre à jour le prédécesseur de `v`**
-         - **Ajouter `(new_cost, v)` dans la file `queue`**
-8. **Construire `optimal_path` en retraçant les prédécesseurs** depuis `end` jusqu'à `start`
-9. **Retourner `optimal_path` et `total_cost`**
+**Entrées :**
+- **Waypoints** : Liste de points **(x, y, z)** formant une grille régulière.
+- **Thermaux** : Liste de points **(x, y, z)** avec des altitudes variables.
+- **Start** : Point de départ **(x, y, z)**.
+- **End** : Point d’arrivée **(x, y, z)**.
+
+**Sorties :**
+- **Chemin optimal** : Séquence de nœuds **(x, y, z)**.
+- **Coût total du trajet**.
+
+---
+
+### **1. Initialisation du Graphe**
+- **Créer un graphe dirigé G.**
+- **Ajouter tous les waypoints et thermaux comme nœuds dans G.**
+- **Pour chaque waypoint w, ajouter w à G.**
+- **Pour chaque thermique t, ajouter t à G.**
+
+---
+
+### **2. Création des Connexions entre les Nœuds**
+**Pour chaque nœud i dans G :**
+   - **Pour chaque nœud j dans G :**
+       - **Si i ≠ j :**
+           - **Calculer la distance Euclidienne** `dist(i, j)`.
+           - **Calculer la différence d’altitude** `altitude_diff = zi - zj`.
+           - **Définir le poids de l’arc :**
+               - **Si altitude_diff > 0** → `coût = dist * 0.5` (**descente avantageuse**).
+               - **Sinon** → `coût = dist * 2` (**montée coûteuse**).
+           - **Ajouter un arc dirigé** `(i → j)` avec le poids.
+
+---
+
+### **3. Algorithme de Recherche du Chemin Optimal (Dijkstra)**
+1. **Initialiser une file de priorité P contenant** `(coût = 0, start)`.
+2. **Créer un dictionnaire `dist`** avec tous les nœuds mis à **∞** sauf **start = 0**.
+3. **Créer un dictionnaire `prédécesseur`** pour stocker le chemin optimal.
+
+4. **Tant que P n’est pas vide :**
+   - **Extraire le nœud u avec le plus petit coût.**
+   - **Si u == end**, alors **reconstruire et retourner le chemin**.
+   - **Pour chaque voisin v de u :**
+       - **Calculer le coût total** `c = coût(u) + poids(u, v)`.
+       - **Si c < dist[v] :**
+           - **Mettre à jour** `dist[v] = c`.
+           - **Mettre à jour** `prédécesseur[v] = u`.
+           - **Ajouter v à la file de priorité P**.
+
+**Si aucun chemin trouvé, retourner** `"Pas de chemin disponible"`.
+
+---
+
+### **4. Reconstruction du Chemin Optimal**
+1. **Initialiser une liste** `chemin = [end]`.
+2. **Tant que prédécesseur[end] existe :**
+   - **Ajouter prédécesseur[end] au chemin.**
+   - **Mettre à jour** `end = prédécesseur[end]`.
+3. **Inverser `chemin` et le retourner**.
+
+---
+
+### **Conclusion**
+- **Ce pseudo-code modélise un graphe** où chaque **waypoint** est connecté aux **voisins proches** et où chaque **thermique est relié aux waypoints les plus proches**.
+- **L’algorithme utilisé est Dijkstra**, qui **garantit le chemin le moins coûteux en énergie**.
+- **Il est possible d’améliorer cette approche en :**
+  - **Priorisant les waypoints et utilisant les thermaux uniquement si cela réduit le coût.**
+
